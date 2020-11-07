@@ -18,42 +18,44 @@ if (!filename) {
   return;
 }
 
-setTimeout(() => {
-  spinner.text = "Loading rainbows";
-}, 1000);
-
-// Find all angular components below directory (component.html)
-// Find associated ts component file (by convention)
-// Find selector for component
-// Build up depedency-tree of all html files that reference that selector
-
-function printDeps(deps) {
-  deps.forEach((dep) => {
-    spinner.info(`${chalk.green(dep)}`);
-  });
-}
-
 function getFilename(filename) {
   const parts = filename.split("/");
   return parts[parts.length - 1];
 }
 
+function buildTree(filename, deps, getChild = (name) => ({ name })) {
+  return {
+    name: getFilename(filename),
+    children: deps.map(getChild),
+  };
+}
+
 async function main() {
   spinner.start().info(`Finding dependencies of ${filename}`);
   const src = fs.readFileSync(filename, "utf8");
-  const deps = detective.getDependenciesFromHtml(src);
-  const depTree = {
-    name: getFilename(filename),
-    children: deps.map((name) => ({
-      name,
-    })),
-  };
 
-  spinner.succeed("Done!");
+  // Find all angular components below directory (component.html)
+  // Find associated ts component file (by convention)
+  // Find selector for component
+  // Build up depedency-tree of all html files that reference that selector
+
+  const moduleDeps = detective(src);
+  const moduleTree = buildTree(filename, moduleDeps);
   printTree(
-    depTree,
+    moduleTree,
     (node) => node.name,
     (node) => node.children
   );
+
+  //   const deps = detective.getDependenciesFromHtml(src);
+  //   const depTree = buildTree(filename, deps);
+
+  spinner.succeed("Done!");
+
+  //   printTree(
+  //     depTree,
+  //     (node) => node.name,
+  //     (node) => node.children
+  //   );
 }
 main();
