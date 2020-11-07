@@ -39,7 +39,7 @@ function getFilename(filename) {
 }
 
 async function main() {
-  spinner.start(`Finding dependencies of ${filename}`);
+  spinner.start().info(`Finding dependencies of ${filename}`);
   const src = fs.readFileSync(filename, "utf8");
   const deps = detective.getDependenciesFromHtml(src);
   const depTree = {
@@ -49,12 +49,11 @@ async function main() {
     })),
   };
 
-  console.log("\n");
+  spinner.succeed("Done!");
   printTree(
     depTree,
     (node) => node.name,
     (node) => node.children
   );
-  spinner.succeed("Done!");
 }
 main();
