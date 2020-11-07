@@ -34,7 +34,7 @@ function buildTree(filename, deps, getChild = (name) => ({ name })) {
 }
 
 function getDepsFromModule(filename) {
-  spinner.info(`Finding dependencies of ${filename}`).start();
+  spinner.start(`Finding dependencies of module ${getFilename(filename)}\n`);
   const src = fs.readFileSync(filename, "utf8");
   const moduleDeps = detectiveTypescript(src);
   return moduleDeps.filter((dep) => dep.startsWith("."));
@@ -43,33 +43,15 @@ function getDepsFromModule(filename) {
 function getDepsForComponent(parent, name) {
   const dir = path.dirname(parent);
   const fullPath = path.resolve(dir, `${name}.html`);
-  spinner.start(`Finding dependencies of component ${getFilename(name)}`);
+  spinner.start(`Finding dependencies of component ${getFilename(name)}\n`);
   const componentSrc = fs.readFileSync(fullPath, "utf8");
   const children = detective.getDependenciesFromHtml(componentSrc);
-  spinner.succeed(
-    `Found ${children.length} dependencies of ${getFilename(name)}`
-  );
+//   spinner.succeed(
+//     `Found ${children.length} dependencies of ${getFilename(name)}`
+//   );
   return {
     name: getFilename(name),
     children: children.map((name) => ({ name })),
-  };
-}
-
-function getDepsForModule(parent, name) {
-  const dir = path.dirname(parent);
-  const fullPath = path.resolve(dir, `${name}.ts`);
-  spinner.start(`Finding dependencies of module ${getFilename(name)}`);
-  const children = getDepsFromModule(fullPath).filter((a) =>
-    a.includes("module")
-  );
-  spinner.succeed(
-    `Found ${children.length} dependencies of ${getFilename(name)}`
-  );
-  return {
-    name: getFilename(name),
-    children: children
-      /*.filter(child => child.endsWith('.module'))*/
-      .map((child) => getDepsForModule(fullPath, child)),
   };
 }
 
@@ -82,6 +64,20 @@ function globp(pattern, options) {
   );
 }
 
+function showModuleTree(moduleFilename) {
+  const moduleDeps = getDepsFromModule(moduleFilename);
+  const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
+  const moduleComponentTree = buildTree(moduleFilename, components, (name) => {
+    return getDepsForComponent(moduleFilename, name);
+  });
+
+  printTree(
+    moduleComponentTree,
+    (node) => node.name,
+    (node) => node.children
+  );
+}
+
 async function main() {
   try {
     // Find all angular components below directory (component.html)
@@ -91,38 +87,21 @@ async function main() {
 
     const rootDir = path.dirname(filename);
 
-    const modules = (await globp(rootDir + "/**/*.module.ts", {})).map(
-      (module) =>
-        "./" + path.relative(path.dirname(filename), module).replace(".ts", "")
-    );
+    const modules = (await globp(rootDir + "/**/*.module.ts", {}));
 
-    const moduleDeps = getDepsFromModule(filename);
-    const modulesFromDeps = moduleDeps.filter((dep) => dep.endsWith(".module"));
+    // const moduleTree = buildTree(filename, modules, (name) => {
+    //   return getDepsForModule(filename, name);
+    // });
 
-    console.log(modules);
-    console.log(modulesFromDeps);
+    // printTree(
+    //   moduleTree,
+    //   (node) => node.name,
+    //   (node) => node.children
+    // );
 
-    const allModules = [...new Set([...modulesFromDeps, ...modules])];
-    const moduleTree = buildTree(filename, allModules, (name) => {
-      return getDepsForModule(filename, name);
+    modules.forEach((module) => {
+      showModuleTree(module);
     });
-
-    printTree(
-      moduleTree,
-      (node) => node.name,
-      (node) => node.children
-    );
-
-    const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
-    const moduleComponentTree = buildTree(filename, components, (name) => {
-      return getDepsForComponent(filename, name);
-    });
-
-    printTree(
-      moduleComponentTree,
-      (node) => node.name,
-      (node) => node.children
-    );
 
     //   const deps = detective.getDependenciesFromHtml(src);
     //   const depTree = buildTree(filename, deps);
