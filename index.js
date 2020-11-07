@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Find all angular components below directory (component.html)
     // Find associated ts component file (by convention)
     // Find selector for component
@@ -8,6 +10,9 @@
 const Parser = require("@typescript-eslint/typescript-estree");
 const Walker = require("node-source-walk");
 const types = require("ast-module-types");
+const HTMLParser = require("node-html-parser");
+const Set = require("es6-set");
+const { standardHtmlElements, angularElements } = require("./html-elements");
 
 /**
  * Extracts the dependencies of the supplied TypeScript module
@@ -100,8 +105,37 @@ module.exports = function (src, options = {}) {
     }
   });
 
+  return dependencies.filter((dep) => dep.endsWith("component"));
+};
+
+module.exports.getDependenciesFromHtml = function (src) {
+  //   const fs = require("fs");
+  //   const html = fs.readFileSync(filename, "utf8");
+
+  const root = HTMLParser.parse(src);
+  const dependencies = [...new Set(flatten(root.childNodes).flat())].filter(
+    (el) => !standardHtmlElements.includes(el) && !angularElements.includes(el)
+  );
   return dependencies;
 };
+
+function flatten(nodes) {
+  const flat = [];
+
+  nodes.forEach((item) => {
+    if (item.childNodes && item.childNodes.length) {
+      flat.push(...flatten(item.childNodes));
+    }
+  });
+
+  const filteredNodes = nodes.map((n) => n.rawTagName).filter((_) => _);
+
+  if (filteredNodes.length) {
+    flat.push(filteredNodes);
+  }
+
+  return flat;
+}
 
 module.exports.tsx = function (src, options) {
   return module.exports(src, Object.assign({}, options, { jsx: true }));

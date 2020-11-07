@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "detective-angular": "index.js"
+  },
   "scripts": {
     "test": "eslint index.js test/test.js && mocha test/test.js",
     "start": "node index.js ../total-uniforms/src/app/admin/admin.module.ts",
@@ -11,6 +14,8 @@
   "dependencies": {
     "@typescript-eslint/typescript-estree": "^2.29.0",
     "ast-module-types": "^2.6.0",
+    "es6-set": "0.1.5",
+    "node-html-parser": "1.4.8",
     "node-source-walk": "^4.2.0",
     "typescript": "^3.8.3"
   },
