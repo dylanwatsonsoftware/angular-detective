@@ -24,7 +24,7 @@ const defaultConfig = {
   dependencyFilter: false,
 };
 
-export function generateDotGraph(dependencies) {
+export function generateDotGraph(dependencies, includeModules) {
   const components = dependencies.filter((d) => !d.name.includes("module"));
   const modules = dependencies.filter((d) => d.name.includes("module"));
 
@@ -41,9 +41,12 @@ export function generateDotGraph(dependencies) {
     config.nodeStyle
   }, height=0, fontcolor="${config.nodeColor}"]
 
-    ${modules
-      .map((module) => {
-        return `subgraph cluster_${module.name.replace(/[.-]/g, "")} {
+    ${
+      !includeModules
+        ? ""
+        : modules
+            .map((module) => {
+              return `subgraph cluster_${module.name.replace(/[.-]/g, "")} {
         label="${module.name}";
         ${
           module.children.length
@@ -53,8 +56,9 @@ export function generateDotGraph(dependencies) {
         color="${config.nodeColor}"
         fontcolor="${config.nodeColor}"
     }`;
-      })
-      .join("\n")}
+            })
+            .join("\n")
+    }
 
     ${components
       .filter((component) => component.children.length)
@@ -69,6 +73,6 @@ export function generateDotGraph(dependencies) {
   return dotFile;
 }
 
-export function saveToDotFile(filename, components) {
-  fs.writeFileSync(filename, generateDotGraph(components));
+export function saveToDotFile(filename, components, includeModules) {
+  fs.writeFileSync(filename, generateDotGraph(components, includeModules));
 }

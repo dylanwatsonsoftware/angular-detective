@@ -23,7 +23,8 @@
     "node-source-walk": "^4.2.0",
     "ora": "5.1.0",
     "print-tree": "0.1.5",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "yargs": "16.1.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",

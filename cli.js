@@ -6,13 +6,22 @@ const { red, gray } = chalk;
 import * as path from "path";
 import { saveToDotFile } from "./dot-graph.js";
 import ora from "ora";
+import yargs from "yargs";
+const argv = yargs(process.argv.slice(2))
+  .usage("Usage: $0 <file> [options]")
+  .option("includeModules", {
+    description: "Optionally groups components by modules",
+  })
+  .default("includeModules", false)
+  .alias("m", "includeModules")
+  .demandCommand(1).argv;
 
-const spinner = ora(`Finding dependencies for module`).start();
+const filename = argv._[0];
 
-const filename = process.argv[2];
-const rootDir = path.dirname(filename);
+const rootDir = path.disrname(filename);
 
 async function main() {
+  const spinner = ora(`Finding dependencies for module`).start();
   try {
     if (!filename) {
       spinner.fail(
@@ -37,9 +46,9 @@ async function main() {
 
     const file = path.basename(filename);
 
-    saveToDotFile(file + ".dot", moduleDependencies);
+    saveToDotFile(file + ".dot", moduleDependencies, argv.includeModules);
 
-    spinner.succeed("Completed!")
+    spinner.succeed("Completed!");
   } catch (e) {
     console.error(e);
     spinner.succeed("Ah!!");
