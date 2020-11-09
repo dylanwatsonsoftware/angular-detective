@@ -39,9 +39,10 @@ async function main() {
 
     saveToDotFile(file + ".dot", moduleDependencies);
 
-    
+    spinner.succeed("Completed!")
   } catch (e) {
     console.error(e);
+    spinner.succeed("Ah!!");
   }
 }
 
