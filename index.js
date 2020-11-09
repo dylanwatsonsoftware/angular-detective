@@ -1,21 +1,22 @@
 "use strict";
 
-const HTMLParser = require("node-html-parser");
-const Set = require("es6-set");
-const { standardHtmlElements, angularElements } = require("./html-elements");
-const fs = require("fs");
-const path = require("path");
-const printTree = require("print-tree");
-const detectiveTypescript = require("detective-typescript");
-const glob = require("glob");
+import htmlParser from "node-html-parser";
+const { parse } = htmlParser;
+import Set from "es6-set";
+import { standardHtmlElements, angularElements } from "./html-elements.js";
+import { readFileSync } from "fs";
+import { dirname, resolve } from "path";
+import printTree from "print-tree";
+import detectiveTypescript from "detective-typescript";
+import glob from "glob";
 
-module.exports.getDependenciesFromHtml = function (src) {
-  const root = HTMLParser.parse(src);
+export function getDependenciesFromHtml(src) {
+  const root = parse(src);
   const dependencies = [...new Set(flatten(root.childNodes).flat())].filter(
     (el) => !standardHtmlElements.includes(el) && !angularElements.includes(el)
   );
   return dependencies;
-};
+}
 
 function flatten(nodes) {
   const flat = [];
@@ -48,23 +49,23 @@ function buildTree(filename, deps, getChild = (name) => ({ name })) {
 }
 
 function getDepsFromModule(filename) {
-  const src = fs.readFileSync(filename, "utf8");
+  const src = readFileSync(filename, "utf8");
   const moduleDeps = detectiveTypescript(src);
   return moduleDeps.filter((dep) => dep.startsWith("."));
 }
 
 function getDepsForComponent(parent, name) {
-  const dir = path.dirname(parent);
-  const fullPath = path.resolve(dir, `${name}.html`);
-  const componentSrc = fs.readFileSync(fullPath, "utf8");
-  const children = module.exports.getDependenciesFromHtml(componentSrc);
+  const dir = dirname(parent);
+  const fullPath = resolve(dir, `${name}.html`);
+  const componentSrc = readFileSync(fullPath, "utf8");
+  const children = getDependenciesFromHtml(componentSrc);
   return {
     name: getFilename(name),
     children: children.map((name) => ({ name })),
   };
 }
 
-module.exports.glob = function globp(pattern, options) {
+const _glob = function globp(pattern, options) {
   return new Promise((res, rej) =>
     glob(pattern, options, (error, files) => {
       if (error) return rej(error);
@@ -72,8 +73,9 @@ module.exports.glob = function globp(pattern, options) {
     })
   );
 };
+export { _glob as glob };
 
-module.exports.showModuleTree = function showModuleTree(moduleFilename) {
+export function showModuleTree(moduleFilename) {
   const moduleDeps = getDepsFromModule(moduleFilename);
   const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
   const moduleComponentTree = buildTree(moduleFilename, components, (name) => {
@@ -85,4 +87,4 @@ module.exports.showModuleTree = function showModuleTree(moduleFilename) {
     (node) => node.name,
     (node) => node.children
   );
-};
+}

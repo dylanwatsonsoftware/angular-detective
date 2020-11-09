@@ -1,6 +1,4 @@
-// Standard HTML elements from https://stackoverflow.com/a/52928643
-
-module.exports.standardHtmlElements = [
+export const standardHtmlElements = [
   "a",
   "abbr",
   "address",
@@ -115,4 +113,4 @@ module.exports.standardHtmlElements = [
   "wbr",
 ];
 
-module.exports.angularElements = ["ng-container", "ng-template"];
+export const angularElements = ["ng-container", "ng-template"];

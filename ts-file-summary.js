@@ -1,8 +1,16 @@
+import ts from "typescript";
+const {
+  createProgram,
+  forEachChild,
+  SyntaxKind,
+  displayPartsToString,
+  NodeFlags,
+} = ts;
+
 /**
  * Originally copied from https://stackoverflow.com/a/39331761
  * Author: Kostya Shkryob <https://stackoverflow.com/users/2169630/kostya-shkryob>
  */
-const ts = require("typescript");
 
 /**
  * Generate documentation for all classes in a set of .ts files, async
@@ -11,21 +19,15 @@ const ts = require("typescript");
  * @param {ts.CompilerOptions} options
  * @param {boolean} includeImported Whether to include summaries for the files that the given files import
  */
-module.exports.generateSummary = function generateSummary(
-  fileNames,
-  options,
-  includeImported = false
-) {
+export function generateSummary(fileNames, options, includeImported = false) {
   return new Promise((res, rej) => {
     try {
-      res(
-        module.exports.generateSummarySync(fileNames, options, includeImported)
-      );
+      res(generateSummarySync(fileNames, options, includeImported));
     } catch (e) {
       rej(e);
     }
   });
-};
+}
 
 /**
  * Generate documention for all classes in a set of .ts files
@@ -35,13 +37,13 @@ module.exports.generateSummary = function generateSummary(
  * @param {boolean} includeImported Whether to include summaries for the files that the given files import
  *
  */
-module.exports.generateSummarySync = function generateSummarySync(
+export function generateSummarySync(
   fileNames,
   options,
   includeImported = false
 ) {
   // Build a program using the set of root file names in fileNames
-  let program = ts.createProgram(fileNames, options);
+  let program = createProgram(fileNames, options);
 
   // Get the checker, we will use it to find more about classes
   let checker = program.getTypeChecker();
@@ -52,47 +54,54 @@ module.exports.generateSummarySync = function generateSummarySync(
     // Visit every sourceFile in the program
     for (const sourceFile of program.getSourceFiles()) {
       // Walk the tree to search for classes
-      ts.forEachChild(sourceFile, visit);
+      forEachChild(sourceFile, visit);
     }
   } else {
     for (const fileName of fileNames) {
-      ts.forEachChild(program.getSourceFile(fileName), visit);
+      forEachChild(program.getSourceFile(fileName), visit);
     }
   }
 
   return output;
 
-  /** visit nodes finding exported classes */
+  /** visit nodes finding exported classes
+   * @param {ts.Node} node
+   */
   function visit(node) {
     // Only consider exported nodes
     if (!isNodeExported(node)) {
       return;
     }
 
-    if (node.kind === ts.SyntaxKind.ClassDeclaration) {
+    if (node.kind === SyntaxKind.ClassDeclaration) {
       // This is a top level class, get its symbol
 
       output.push(serializeClass(node));
       // No need to walk any further, class expressions/inner declarations
       // cannot be exported
-    } else if (node.kind === ts.SyntaxKind.ModuleDeclaration) {
+    } else if (node.kind === SyntaxKind.ModuleDeclaration) {
       // This is a namespace, visit its children
-      ts.forEachChild(node, visit);
+      forEachChild(node, visit);
     }
   }
 
-  /** Serialize a symbol into a json object */
+  /** Serialize a symbol into a json object
+   * @param {ts.Symbol} symbol
+   */
   function serializeSymbol(symbol) {
     return {
       name: symbol.getName(),
-      documentation: ts.displayPartsToString(symbol.getDocumentationComment()),
+      documentation: displayPartsToString(symbol.getDocumentationComment()),
       type: checker.typeToString(
         checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration)
       ),
     };
   }
 
-  /** Serialize a class symbol infomration */
+  /**
+   * Serialize a class symbol information
+   * @param {ts.Node} node
+   */
   function serializeClass(node) {
     let symbol = checker.getSymbolAtLocation(node.name);
 
@@ -111,6 +120,9 @@ module.exports.generateSummarySync = function generateSummarySync(
     return details;
   }
 
+  /**
+   * @param {ts.Decorator} decorator
+   */
   function serializeDecorator(decorator) {
     let symbol = checker.getSymbolAtLocation(
       decorator.expression.getFirstToken()
@@ -119,6 +131,8 @@ module.exports.generateSummarySync = function generateSummarySync(
       symbol,
       symbol.valueDeclaration
     );
+    console.log(decorator.getChildren());
+    // console.log(symbol)
     let details = serializeSymbol(symbol);
     details.constructors = decoratorType
       .getCallSignatures()
@@ -126,22 +140,24 @@ module.exports.generateSummarySync = function generateSummarySync(
     return details;
   }
 
-  /** Serialize a signature (call or construct) */
+  /** Serialize a signature (call or construct)
+   * @param {ts.Signature} signature
+   */
   function serializeSignature(signature) {
     return {
       parameters: signature.parameters.map(serializeSymbol),
       returnType: checker.typeToString(signature.getReturnType()),
-      documentation: ts.displayPartsToString(
-        signature.getDocumentationComment()
-      ),
+      documentation: displayPartsToString(signature.getDocumentationComment()),
     };
   }
 
-  /** True if this is visible outside this file, false otherwise */
+  /** True if this is visible outside this file, false otherwise
+   * @param {ts.Node} node
+   */
   function isNodeExported(node) {
     return (
-      (node.flags & ts.NodeFlags.Export) !== 0 ||
-      (node.parent && node.parent.kind === ts.SyntaxKind.SourceFile)
+      (node.flags & NodeFlags.Export) !== 0 ||
+      (node.parent && node.parent.kind === SyntaxKind.SourceFile)
     );
   }
-};
+}
