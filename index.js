@@ -73,7 +73,7 @@ function getSelector(name, parent) {
     .filter((_) => _)[0];
 
   if (!component || !component.param) return;
-  return component.param.selector.replace("'");
+  return component.param.selector.replace("'", "");
 }
 
 function buildTree(filename, deps, getChild = (name) => ({ name })) {
