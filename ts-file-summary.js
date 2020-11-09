@@ -4,10 +4,18 @@
  */
 const ts = require("typescript");
 
-/** Generate documention for all classes in a set of .ts files */
-module.exports.generateDocumentation = function generateDocumentation(
+/**
+ * Generate documention for all classes in a set of .ts files
+ * 
+ * @param {string[]} fileNames
+ * @param {ts.CompilerOptions} options
+ * @param {boolean} includeImported Whether to include summaries for the files that the given files import
+ *
+ */
+module.exports.generateSummary = function generateSummary(
   fileNames,
-  options
+  options,
+  includeImported = false
 ) {
   // Build a program using the set of root file names in fileNames
   let program = ts.createProgram(fileNames, options);
@@ -17,10 +25,16 @@ module.exports.generateDocumentation = function generateDocumentation(
 
   let output /*: DocEntry[]*/ = [];
 
-  // Visit every sourceFile in the program
-  for (const sourceFile of program.getSourceFiles()) {
-    // Walk the tree to search for classes
-    ts.forEachChild(sourceFile, visit);
+  if (includeImported) {
+    // Visit every sourceFile in the program
+    for (const sourceFile of program.getSourceFiles()) {
+      // Walk the tree to search for classes
+      ts.forEachChild(sourceFile, visit);
+    }
+  } else {
+    for (const fileName of fileNames) {
+      ts.forEachChild(program.getSourceFile(fileName), visit);
+    }
   }
 
   return output;
