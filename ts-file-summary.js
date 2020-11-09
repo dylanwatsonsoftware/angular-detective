@@ -127,16 +127,16 @@ export function generateSummarySync(
     let symbol = checker.getSymbolAtLocation(
       decorator.expression.getFirstToken()
     );
+
     let decoratorType = checker.getTypeOfSymbolAtLocation(
       symbol,
       symbol.valueDeclaration
     );
-    console.log(decorator.getChildren());
-    // console.log(symbol)
     let details = serializeSymbol(symbol);
     details.constructors = decoratorType
       .getCallSignatures()
       .map(serializeSignature);
+    details.param = getDecoratorParam(decorator);
     return details;
   }
 
@@ -146,6 +146,7 @@ export function generateSummarySync(
   function serializeSignature(signature) {
     return {
       parameters: signature.parameters.map(serializeSymbol),
+
       returnType: checker.typeToString(signature.getReturnType()),
       documentation: displayPartsToString(signature.getDocumentationComment()),
     };
@@ -159,5 +160,29 @@ export function generateSummarySync(
       (node.flags & NodeFlags.Export) !== 0 ||
       (node.parent && node.parent.kind === SyntaxKind.SourceFile)
     );
+  }
+}
+function getDecoratorParam(decorator) {
+    return decorator.expression
+        .getChildren()[2]
+        .getChildren()[0]
+        .getChildren()[1]
+        .getChildren()
+        .filter((c) => c.getChildren().length)
+        .map((p) => ({
+            key: p.getChildren()[0].getText(),
+            value: tryJsonParse(p.getChildren()[2].getText()),
+        }))
+        .reduce(function (map, obj) {
+            map[obj.key] = obj.value;
+            return map;
+        }, {});
+}
+
+function tryJsonParse(thing) {
+  try {
+    return JSON.parse(thing);
+  } catch (e) {
+    return thing;
   }
 }
