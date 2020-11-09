@@ -43,7 +43,7 @@ export function generateDotGraph(dependencies) {
 
     ${modules
       .map((module) => {
-        return `subgraph "${module.name}" {
+        return `subgraph cluster_${module.name.replace(/[.-]/g, "")}" {
         label="${module.name}";
         ${
           module.children.length
