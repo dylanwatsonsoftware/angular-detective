@@ -5,13 +5,13 @@ import { saveToDotFile } from "./dot-graph.js";
 import yargs from "yargs";
 
 const argv = yargs(process.argv.slice(2))
-.usage("Usage: $0 <file> [options]")
-.option("includeModules", {
-  description: "Optionally groups components by modules",
-})
-.default("includeModules", false)
-.alias("m", "includeModules")
-.demandCommand(1).argv;
+  .usage("Usage: $0 <file> [options]")
+  .option("includeModules", {
+    description: "Optionally groups components by modules",
+  })
+  .default("includeModules", false)
+  .alias("m", "includeModules")
+  .demandCommand(1).argv;
 
 import * as detective from "./index.js";
 
@@ -20,7 +20,7 @@ const filename = argv._[0];
 const rootDir = path.dirname(filename);
 
 async function main() {
-  console.log('Finding dependencies...')
+  console.log("Finding dependencies...");
   try {
     // Find all angular components below directory (component.html)
     // Find associated ts component file (by convention)
@@ -38,10 +38,9 @@ async function main() {
 
     saveToDotFile(file + ".dot", moduleDependencies, argv.includeModules);
 
-    spinner.succeed("Completed!");
+    console.log("Completed!");
   } catch (e) {
     console.error(e);
-    spinner.succeed("Ah!!");
   }
 }
 
