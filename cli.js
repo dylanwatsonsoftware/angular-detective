@@ -2,7 +2,6 @@
 
 import * as path from "path";
 import { saveToDotFile } from "./dot-graph.js";
-import ora from "ora";
 import yargs from "yargs";
 
 const argv = yargs(process.argv.slice(2))
@@ -21,7 +20,7 @@ const filename = argv._[0];
 const rootDir = path.dirname(filename);
 
 async function main() {
-  const spinner = ora(`Finding dependencies for module`).start();
+  console.log('Finding dependencies...')
   try {
     // Find all angular components below directory (component.html)
     // Find associated ts component file (by convention)
