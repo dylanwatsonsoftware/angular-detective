@@ -5,14 +5,37 @@
 const ts = require("typescript");
 
 /**
+ * Generate documentation for all classes in a set of .ts files, async
+ *
+ * @param {string[]} fileNames
+ * @param {ts.CompilerOptions} options
+ * @param {boolean} includeImported Whether to include summaries for the files that the given files import
+ */
+module.exports.generateSummary = function generateSummary(
+  fileNames,
+  options,
+  includeImported = false
+) {
+  return new Promise((res, rej) => {
+    try {
+      res(
+        module.exports.generateSummarySync(fileNames, options, includeImported)
+      );
+    } catch (e) {
+      rej(e);
+    }
+  });
+};
+
+/**
  * Generate documention for all classes in a set of .ts files
- * 
+ *
  * @param {string[]} fileNames
  * @param {ts.CompilerOptions} options
  * @param {boolean} includeImported Whether to include summaries for the files that the given files import
  *
  */
-module.exports.generateSummary = function generateSummary(
+module.exports.generateSummarySync = function generateSummarySync(
   fileNames,
   options,
   includeImported = false
