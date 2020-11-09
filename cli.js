@@ -36,9 +36,9 @@ async function main() {
 
     const modules = await detective.glob(rootDir + "/**/*.module.ts", {});
 
-    modules.forEach((module) => {
-      detective.showModuleTree(module);
-    });
+    // modules.forEach((module) => {
+    //   detective.showModuleTree(module);
+    // });
 
     spinner.start(`Generating types for ${rootDir}`);
 

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "eslint index.js test/test.js && mocha test/test.js",
-    "start": "node index.js ../total-uniforms/src/app/admin/admin.module.ts",
+    "start": "node cli.js ../totaluniforms/src/app/app.component.ts",
     "start:app": "node index.js ../total-uniforms/src/app/app.module.ts"
   },
   "dependencies": {

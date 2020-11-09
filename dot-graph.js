@@ -25,8 +25,6 @@ const defaultConfig = {
 
 export function generateDotGraph(components) {
   const config = defaultConfig;
-  console.log(JSON.stringify(components, undefined, 2));
-  console.log(" ======= DOT FILE ======= ");
   const dotFile = `
   digraph G {
     overlap=false

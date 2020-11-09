@@ -12,6 +12,7 @@ const {
  * Author: Kostya Shkryob <https://stackoverflow.com/users/2169630/kostya-shkryob>
  */
 
+const cache = {};
 /**
  * Generate documentation for all classes in a set of .ts files, async
  *
@@ -42,6 +43,10 @@ export function generateSummarySync(
   options,
   includeImported = false
 ) {
+  if (cache[JSON.stringify(fileNames)]) {
+    return cache[JSON.stringify(fileNames)];
+  }
+
   // Build a program using the set of root file names in fileNames
   let program = createProgram(fileNames, options);
 
@@ -137,6 +142,7 @@ export function generateSummarySync(
       .getCallSignatures()
       .map(serializeSignature);
     details.param = getDecoratorParam(decorator);
+
     return details;
   }
 
@@ -162,26 +168,34 @@ export function generateSummarySync(
     );
   }
 }
+/**
+ *
+ * @param {ts.Decorator} decorator
+ */
 function getDecoratorParam(decorator) {
+  try {
     return decorator.expression
-        .getChildren()[2]
-        .getChildren()[0]
-        .getChildren()[1]
-        .getChildren()
-        .filter((c) => c.getChildren().length)
-        .map((p) => ({
-            key: p.getChildren()[0].getText(),
-            value: tryJsonParse(p.getChildren()[2].getText()),
-        }))
-        .reduce(function (map, obj) {
-            map[obj.key] = obj.value;
-            return map;
-        }, {});
+      .getChildren()[2]
+      .getChildren()[0]
+      .getChildren()[1]
+      .getChildren()
+      .filter((c) => c.getChildren().length)
+      .map((p) => ({
+        key: p.getChildren()[0].getText(),
+        value: tryJsonParse(p.getChildren()[2].getText()),
+      }))
+      .reduce(function (map, obj) {
+        map[obj.key] = obj.value;
+        return map;
+      }, {});
+  } catch (e) {
+    console.warn("Couldn't find decorator for: " + decorator.getText());
+  }
 }
 
 function tryJsonParse(thing) {
   try {
-    return JSON.parse(thing);
+    return JSON.parse(thing).replace("'");
   } catch (e) {
     return thing;
   }

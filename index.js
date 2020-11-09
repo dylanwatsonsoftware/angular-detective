@@ -9,6 +9,9 @@ import { dirname, resolve } from "path";
 import printTree from "print-tree";
 import detectiveTypescript from "detective-typescript";
 import glob from "glob";
+import { generateSummarySync } from "./ts-file-summary.js";
+import ts from "typescript";
+const { ScriptTarget, ModuleKind } = ts;
 
 export function getDependenciesFromHtml(src) {
   const root = parse(src);
@@ -36,9 +39,37 @@ function flatten(nodes) {
   return flat;
 }
 
-function getFilename(filename) {
+function getFilename(filename, parent) {
+  if (parent) {
+    const selector = getSelector(filename, parent);
+    if (selector) {
+      console.error(selector);
+      return selector;
+    }
+  }
+
   const parts = filename.split("/");
   return parts[parts.length - 1];
+}
+
+function getSelector(name, parent) {
+  const dir = dirname(parent);
+  const fullPath = resolve(dir, `${name}.ts`);
+  const types = generateSummarySync([fullPath], {
+    target: ScriptTarget.ES5,
+    module: ModuleKind.CommonJS,
+  });
+
+  const component = types
+    .map((type) => {
+      return type.decorators.find(
+        (decorator) => decorator.name === "Component"
+      );
+    })
+    .filter((_) => _)[0];
+
+  if (!component || !component.param) return;
+  return component.param.selector;
 }
 
 function buildTree(filename, deps, getChild = (name) => ({ name })) {
@@ -60,7 +91,7 @@ function getDepsForComponent(parent, name) {
   const componentSrc = readFileSync(fullPath, "utf8");
   const children = getDependenciesFromHtml(componentSrc);
   return {
-    name: getFilename(name),
+    name: getFilename(name, parent),
     children: children.map((name) => ({ name })),
   };
 }
