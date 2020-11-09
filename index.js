@@ -65,8 +65,9 @@ function getSelector(name, parent) {
 
   const component = types
     .map((type) => {
-      return type.decorators && type.decorators.find(
-        (decorator) => decorator.name === "Component"
+      return (
+        type.decorators &&
+        type.decorators.find((decorator) => decorator.name === "Component")
       );
     })
     .filter((_) => _)[0];
@@ -94,12 +95,21 @@ function getDepsForComponent(parent, name) {
   spinner.text = `Get component deps for ${name}`;
   const dir = dirname(parent);
   const fullPath = resolve(dir, `${name}.html`);
-  const componentSrc = readFileSync(fullPath, "utf8");
-  const children = getDependenciesFromHtml(componentSrc);
-  return {
-    name: getFilename(name, parent),
-    children: children.map((name) => ({ name })),
-  };
+  try {
+    const componentSrc = readFileSync(fullPath, "utf8");
+    const children = getDependenciesFromHtml(componentSrc);
+    return {
+      name: getFilename(name, parent),
+      children: children.map((name) => ({ name })),
+    };
+  } catch (e) {
+    spinner.warn(e.message)
+    // Couldn't load the html, so assume no children
+    return {
+      name: getFilename(name, parent),
+      children: [],
+    };
+  }
 }
 
 const _glob = function globp(pattern, options) {
@@ -124,7 +134,7 @@ export function getModuleTree(moduleFilename) {
 
 export function getFlatModuleDeps(moduleFilename) {
   spinner.text = "Finding module " + moduleFilename;
-  spinner.start()
+  spinner.start();
   const moduleDeps = getDepsFromModule(moduleFilename);
   const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
   const moduleComponentTree = buildTree(moduleFilename, components, (name) => {
