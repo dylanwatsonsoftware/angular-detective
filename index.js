@@ -68,7 +68,7 @@ function getSelector(name, parent) {
     })
     .filter((_) => _)[0];
 
-  if (!component || !component.param) return;
+  if (!component || !component.param || !component.param.selector) return;
   return component.param.selector.replace("'", "");
 }
 
