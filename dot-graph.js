@@ -43,13 +43,15 @@ export function generateDotGraph(dependencies) {
 
     ${modules
       .map((module) => {
-        return `subgraph cluster_${module.name.replace(/[.-]/g, "")}" {
+        return `subgraph cluster_${module.name.replace(/[.-]/g, "")} {
         label="${module.name}";
         ${
           module.children.length
             ? module.children.map((c) => `"${c}"`).join(",") + ";"
             : ""
         }
+        color="${config.nodeColor}"
+        fontcolor="${config.nodeColor}"
     }`;
       })
       .join("\n")}
