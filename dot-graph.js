@@ -69,10 +69,10 @@ export function generateDotGraph(dependencies, includeModules) {
       })
       .join("\n")}
 }`;
-  console.log(dotFile);
   return dotFile;
 }
 
 export function saveToDotFile(filename, components, includeModules) {
   fs.writeFileSync(filename, generateDotGraph(components, includeModules));
+  console.log(`✔ Dot file written to ${filename}`);
 }

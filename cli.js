@@ -1,37 +1,28 @@
 #!/usr/bin/env node
-import * as detective from "./index.js";
 
-import chalk from "chalk";
-const { red, gray } = chalk;
 import * as path from "path";
 import { saveToDotFile } from "./dot-graph.js";
 import ora from "ora";
 import yargs from "yargs";
+
 const argv = yargs(process.argv.slice(2))
-  .usage("Usage: $0 <file> [options]")
-  .option("includeModules", {
-    description: "Optionally groups components by modules",
-  })
-  .default("includeModules", false)
-  .alias("m", "includeModules")
-  .demandCommand(1).argv;
+.usage("Usage: $0 <file> [options]")
+.option("includeModules", {
+  description: "Optionally groups components by modules",
+})
+.default("includeModules", false)
+.alias("m", "includeModules")
+.demandCommand(1).argv;
+
+import * as detective from "./index.js";
 
 const filename = argv._[0];
 
-const rootDir = path.disrname(filename);
+const rootDir = path.dirname(filename);
 
 async function main() {
   const spinner = ora(`Finding dependencies for module`).start();
   try {
-    if (!filename) {
-      spinner.fail(
-        `${red("You must provide a file to search dependencies for:")}`
-      );
-      spinner.info(`e.g: ${gray("npx detective-angular app.component.ts")}`);
-      console.log(process.argv);
-      return;
-    }
-
     // Find all angular components below directory (component.html)
     // Find associated ts component file (by convention)
     // Find selector for component

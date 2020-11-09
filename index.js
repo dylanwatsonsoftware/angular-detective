@@ -13,11 +13,7 @@ import { generateSummarySync } from "./ts-file-summary.js";
 import ts from "typescript";
 const { ScriptTarget, ModuleKind } = ts;
 
-import ora from "ora";
-const spinner = ora(`Finding dependencies for module`).start();
-
 export function getDependenciesFromHtml(src) {
-  spinner.text = "Parsing HTML...";
   const root = parse(src);
   const dependencies = [...new Set(flatten(root.childNodes).flat())].filter(
     (el) => !standardHtmlElements.includes(el) && !angularElements.includes(el)
@@ -77,7 +73,6 @@ function getSelector(name, parent) {
 }
 
 function buildTree(filename, deps, getChild = (name) => ({ name })) {
-  spinner.text = `Building tree for ${filename}`;
   return {
     name: getFilename(filename),
     children: deps.map(getChild),
@@ -85,14 +80,12 @@ function buildTree(filename, deps, getChild = (name) => ({ name })) {
 }
 
 function getDepsFromModule(filename) {
-  spinner.text = `Get module deps for ${filename}`;
   const src = readFileSync(filename, "utf8");
   const moduleDeps = detectiveTypescript(src);
   return moduleDeps.filter((dep) => dep.startsWith("."));
 }
 
 function getDepsForComponent(parent, name) {
-  spinner.text = `Get component deps for ${name}`;
   const dir = dirname(parent);
   const fullPath = resolve(dir, `${name}.html`);
   try {
@@ -103,7 +96,7 @@ function getDepsForComponent(parent, name) {
       children: children.map((name) => ({ name })),
     };
   } catch (e) {
-    spinner.warn(e.message);
+    console.warn(e.message);
     // Couldn't load the html, so assume no children
     return {
       name: getFilename(name, parent),
@@ -133,15 +126,13 @@ export function getModuleTree(moduleFilename) {
 }
 
 export function getFlatModuleDeps(moduleFilename) {
-  spinner.text = "Finding module " + moduleFilename;
-  spinner.start();
   const moduleDeps = getDepsFromModule(moduleFilename);
   const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
   const moduleComponentTree = buildTree(moduleFilename, components, (name) => {
     return getDepsForComponent(moduleFilename, name);
   });
 
-  spinner.succeed(moduleFilename + " Done!");
+  console.log("✔ " + moduleFilename + " Done!");
   return flattenTree(moduleComponentTree);
 }
 
