@@ -4,9 +4,6 @@ import ora from "ora";
 import chalk from "chalk";
 const { red, gray } = chalk;
 import * as path from "path";
-import { generateSummary } from "./ts-file-summary.js";
-import ts from "typescript";
-const { ScriptTarget, ModuleKind } = ts;
 import { saveToDotFile } from "./dot-graph.js";
 
 const spinner = ora();

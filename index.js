@@ -43,7 +43,6 @@ function getFilename(filename, parent) {
   if (parent) {
     const selector = getSelector(filename, parent);
     if (selector) {
-      console.error(selector);
       return selector;
     }
   }

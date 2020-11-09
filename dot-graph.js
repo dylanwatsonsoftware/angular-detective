@@ -23,7 +23,10 @@ const defaultConfig = {
   dependencyFilter: false,
 };
 
-export function generateDotGraph(components) {
+export function generateDotGraph(dependencies) {
+  const components = dependencies.filter((d) => !d.name.includes("module"));
+  const modules = dependencies.filter((d) => d.name.includes("module"));
+
   const config = defaultConfig;
   const dotFile = `
   digraph G {
@@ -36,6 +39,13 @@ export function generateDotGraph(components) {
     node [color="${config.nodeColor}", shape=${config.nodeShape}, style=${
     config.nodeStyle
   }, height=0, fontcolor="${config.nodeColor}"]
+
+    ${modules.map((module) => {
+      return `subgraph "${module.name}" {
+        label="${module.name}";
+        ${module.children.join(",")};
+    }`;
+    })}
 
     ${components
       .filter((component) => component.children.length)
