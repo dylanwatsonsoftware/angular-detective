@@ -123,7 +123,8 @@ export function getModuleTree(moduleFilename) {
 }
 
 export function getFlatModuleDeps(moduleFilename) {
-  spinner.text = moduleFilename + " module finding";
+  spinner.text = "Finding module " + moduleFilename;
+  spinner.start()
   const moduleDeps = getDepsFromModule(moduleFilename);
   const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
   const moduleComponentTree = buildTree(moduleFilename, components, (name) => {
