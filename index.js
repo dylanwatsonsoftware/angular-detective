@@ -132,7 +132,7 @@ export function getFlatModuleDeps(moduleFilename) {
     return getDepsForComponent(moduleFilename, name);
   });
 
-  console.log("✔ " + moduleFilename + " Done!");
+  console.log("✔ " + moduleFilename + " done!");
   return flattenTree(moduleComponentTree);
 }
 
