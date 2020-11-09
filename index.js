@@ -75,13 +75,47 @@ const _glob = function globp(pattern, options) {
 };
 export { _glob as glob };
 
-export function showModuleTree(moduleFilename) {
+export function getModuleTree(moduleFilename) {
   const moduleDeps = getDepsFromModule(moduleFilename);
   const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
   const moduleComponentTree = buildTree(moduleFilename, components, (name) => {
     return getDepsForComponent(moduleFilename, name);
   });
 
+  return moduleComponentTree;
+}
+
+export function getFlatModuleDeps(moduleFilename) {
+  const moduleDeps = getDepsFromModule(moduleFilename);
+  const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
+  const moduleComponentTree = buildTree(moduleFilename, components, (name) => {
+    return getDepsForComponent(moduleFilename, name);
+  });
+
+  return flattenTree(moduleComponentTree);
+}
+
+function flattenTree(child) {
+  if (child.children && child.children.length) {
+    return [
+      {
+        name: child.name,
+        children: child.children.map((c) => c.name),
+      },
+      ...child.children.map((c) => flattenTree(c)).flat(),
+    ];
+  }
+
+  return [
+    {
+      name: child.name,
+      children: [],
+    },
+  ];
+}
+
+export function showModuleTree(moduleFilename) {
+  const moduleComponentTree = getModuleTree(moduleFilename);
   printTree(
     moduleComponentTree,
     (node) => node.name,

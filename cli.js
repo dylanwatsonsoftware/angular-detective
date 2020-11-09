@@ -3,10 +3,11 @@ import * as detective from "./index.js";
 import ora from "ora";
 import chalk from "chalk";
 const { red, gray } = chalk;
-import { dirname } from "path";
+import * as path from "path";
 import { generateSummary } from "./ts-file-summary.js";
 import ts from "typescript";
 const { ScriptTarget, ModuleKind } = ts;
+import { saveToDotFile } from "./dot-graph.js";
 
 const spinner = ora();
 
@@ -27,26 +28,31 @@ async function main() {
     // Find associated ts component file (by convention)
     // Find selector for component
     // Build up depedency-tree of all html files that reference that selector
+    // Generate dot file based on dep tree
 
-    const rootDir = dirname(filename);
+    const rootDir = path.dirname(filename);
 
     spinner.start(`Finding dependencies for module ${rootDir}`);
 
-    // const modules = await detective.glob(rootDir + "/**/*.module.ts", {});
+    const modules = await detective.glob(rootDir + "/**/*.module.ts", {});
 
-    // modules.forEach((module) => {
-    //   detective.showModuleTree(module);
-    // });
+    modules.forEach((module) => {
+      detective.showModuleTree(module);
+    });
 
     spinner.start(`Generating types for ${rootDir}`);
 
-    const tsFileDoco = await generateSummary([process.argv[2]], {
-      target: ScriptTarget.ES5,
-      module: ModuleKind.CommonJS,
-    });
+    // const tsFileDoco = await generateSummary([process.argv[2]], {
+    //   target: ScriptTarget.ES5,
+    //   module: ModuleKind.CommonJS,
+    // });
 
-    console.log();
+    // console.log();
     // console.log(JSON.stringify(tsFileDoco, undefined, 4));
+
+    saveToDotFile(path.basename(filename) + ".dot",
+      modules.map((module) => detective.getFlatModuleDeps(module)).flat()
+    );
 
     spinner.succeed("Done!");
   } catch (e) {
