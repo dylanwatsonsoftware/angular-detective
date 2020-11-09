@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 import * as detective from "./index.js";
-import ora from "ora";
+
 import chalk from "chalk";
 const { red, gray } = chalk;
 import * as path from "path";
 import { saveToDotFile } from "./dot-graph.js";
+import ora from "ora";
+
+const spinner = ora(`Finding dependencies for module`).start();
 
 const filename = process.argv[2];
 const rootDir = path.dirname(filename);
-const spinner = ora(`Finding dependencies for module ${rootDir}`).start();
 
 async function main() {
   try {
@@ -37,10 +39,9 @@ async function main() {
 
     saveToDotFile(file + ".dot", moduleDependencies);
 
-    spinner.succeed("Done!");
+    
   } catch (e) {
     console.error(e);
-    spinner.fail(e.message);
   }
 }
 

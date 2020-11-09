@@ -13,7 +13,11 @@ import { generateSummarySync } from "./ts-file-summary.js";
 import ts from "typescript";
 const { ScriptTarget, ModuleKind } = ts;
 
+import ora from "ora";
+const spinner = ora(`Finding dependencies for module`).start();
+
 export function getDependenciesFromHtml(src) {
+  spinner.text = "Parsing HTML...";
   const root = parse(src);
   const dependencies = [...new Set(flatten(root.childNodes).flat())].filter(
     (el) => !standardHtmlElements.includes(el) && !angularElements.includes(el)
@@ -61,7 +65,7 @@ function getSelector(name, parent) {
 
   const component = types
     .map((type) => {
-      return type.decorators.find(
+      return type.decorators && type.decorators.find(
         (decorator) => decorator.name === "Component"
       );
     })
@@ -72,6 +76,7 @@ function getSelector(name, parent) {
 }
 
 function buildTree(filename, deps, getChild = (name) => ({ name })) {
+  spinner.text = `Building tree for ${filename}`;
   return {
     name: getFilename(filename),
     children: deps.map(getChild),
@@ -79,12 +84,14 @@ function buildTree(filename, deps, getChild = (name) => ({ name })) {
 }
 
 function getDepsFromModule(filename) {
+  spinner.text = `Get module deps for ${filename}`;
   const src = readFileSync(filename, "utf8");
   const moduleDeps = detectiveTypescript(src);
   return moduleDeps.filter((dep) => dep.startsWith("."));
 }
 
 function getDepsForComponent(parent, name) {
+  spinner.text = `Get component deps for ${name}`;
   const dir = dirname(parent);
   const fullPath = resolve(dir, `${name}.html`);
   const componentSrc = readFileSync(fullPath, "utf8");
@@ -122,6 +129,7 @@ export function getFlatModuleDeps(moduleFilename) {
     return getDepsForComponent(moduleFilename, name);
   });
 
+  spinner.succeed("Done!");
   return flattenTree(moduleComponentTree);
 }
 
