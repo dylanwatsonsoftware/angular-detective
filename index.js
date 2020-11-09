@@ -73,7 +73,7 @@ function getSelector(name, parent) {
     .filter((_) => _)[0];
 
   if (!component || !component.param) return;
-  return component.param.selector;
+  return component.param.selector.replace("'");
 }
 
 function buildTree(filename, deps, getChild = (name) => ({ name })) {
@@ -103,7 +103,7 @@ function getDepsForComponent(parent, name) {
       children: children.map((name) => ({ name })),
     };
   } catch (e) {
-    spinner.warn(e.message)
+    spinner.warn(e.message);
     // Couldn't load the html, so assume no children
     return {
       name: getFilename(name, parent),
