@@ -195,7 +195,7 @@ function getDecoratorParam(decorator) {
 
 function tryJsonParse(thing) {
   try {
-    return JSON.parse(thing).replace("'");
+    return JSON.parse(thing).replace(/'/g, "");
   } catch (e) {
     return thing;
   }
