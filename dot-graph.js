@@ -1,4 +1,5 @@
 import * as fs from "fs";
+
 const defaultConfig = {
   baseDir: null,
   excludeRegExp: false,
@@ -40,18 +41,24 @@ export function generateDotGraph(dependencies) {
     config.nodeStyle
   }, height=0, fontcolor="${config.nodeColor}"]
 
-    ${modules.map((module) => {
-      return `subgraph "${module.name}" {
+    ${modules
+      .map((module) => {
+        return `subgraph "${module.name}" {
         label="${module.name}";
-        ${module.children.join(",")};
+        ${
+          module.children.length
+            ? module.children.map((c) => `"${c}"`).join(",") + ";"
+            : ""
+        }
     }`;
-    })}
+      })
+      .join("\n")}
 
     ${components
       .filter((component) => component.children.length)
       .map((component) => {
         return component.children
-          .map((child) => `"${component.name}" -> "${child}";`)
+          .map((child) => `  "${component.name}" -> "${child}";`)
           .join("\n");
       })
       .join("\n")}

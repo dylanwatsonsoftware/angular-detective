@@ -6,12 +6,12 @@ const { red, gray } = chalk;
 import * as path from "path";
 import { saveToDotFile } from "./dot-graph.js";
 
-const spinner = ora();
+const filename = process.argv[2];
+const rootDir = path.dirname(filename);
+const spinner = ora(`Finding dependencies for module ${rootDir}`).start();
 
 async function main() {
   try {
-    const filename = process.argv[2];
-
     if (!filename) {
       spinner.fail(
         `${red("You must provide a file to search dependencies for:")}`
@@ -27,29 +27,15 @@ async function main() {
     // Build up depedency-tree of all html files that reference that selector
     // Generate dot file based on dep tree
 
-    const rootDir = path.dirname(filename);
-
-    spinner.start(`Finding dependencies for module ${rootDir}`);
-
     const modules = await detective.glob(rootDir + "/**/*.module.ts", {});
 
-    // modules.forEach((module) => {
-    //   detective.showModuleTree(module);
-    // });
+    const moduleDependencies = modules
+      .map((module) => detective.getFlatModuleDeps(module))
+      .flat();
 
-    spinner.start(`Generating types for ${rootDir}`);
+    const file = path.basename(filename);
 
-    // const tsFileDoco = await generateSummary([process.argv[2]], {
-    //   target: ScriptTarget.ES5,
-    //   module: ModuleKind.CommonJS,
-    // });
-
-    // console.log();
-    // console.log(JSON.stringify(tsFileDoco, undefined, 4));
-
-    saveToDotFile(path.basename(filename) + ".dot",
-      modules.map((module) => detective.getFlatModuleDeps(module)).flat()
-    );
+    saveToDotFile(file + ".dot", moduleDependencies);
 
     spinner.succeed("Done!");
   } catch (e) {
