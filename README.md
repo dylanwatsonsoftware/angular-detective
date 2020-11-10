@@ -1,4 +1,10 @@
+<p align="center">
+	<img alt="angular-detective" src="assets/angular-detective.png" width="320">
+</p>
+
 ### detective-angular-component
+
+
 > Find the dependencies of an angular component and output a dot file
 
 Whilst this was intended to work with a similar interface to other detectives, so it can be incorporated into Madge,
