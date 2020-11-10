@@ -13,10 +13,11 @@ const argv = yargs(process.argv.slice(2))
   })
   .option("prefix", {
     alias: "p",
-    description: "The angular app prefix to remove from the component names",
-    default: "",
+    description: "The angular app prefix to remove from the components",
   })
   .demandCommand(1).argv;
+
+ 
 
 import * as detective from "./index.js";
 
@@ -41,7 +42,12 @@ async function main() {
 
     const file = path.basename(filename);
 
-    saveToDotFile(file + ".dot", moduleDependencies, argv.includeModules, argv.prefix);
+    saveToDotFile(
+      file + ".dot",
+      moduleDependencies,
+      argv.includeModules,
+      argv.prefix || ""
+    );
 
     console.log("Completed!");
   } catch (e) {
