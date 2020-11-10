@@ -122,15 +122,17 @@ export function getModuleTree(moduleFilename) {
     return getDepsForComponent(moduleFilename, name);
   });
 
+  printTree(
+    moduleComponentTree,
+    (node) => node.name,
+    (node) => node.children
+  );
+
   return moduleComponentTree;
 }
 
 export function getFlatModuleDeps(moduleFilename) {
-  const moduleDeps = getDepsFromModule(moduleFilename);
-  const components = moduleDeps.filter((dep) => dep.endsWith(".component"));
-  const moduleComponentTree = buildTree(moduleFilename, components, (name) => {
-    return getDepsForComponent(moduleFilename, name);
-  });
+  const moduleComponentTree = getModuleTree(moduleFilename);
 
   console.log("✔ " + moduleFilename + " done!");
   return flattenTree(moduleComponentTree);
@@ -156,10 +158,5 @@ function flattenTree(child) {
 }
 
 export function showModuleTree(moduleFilename) {
-  const moduleComponentTree = getModuleTree(moduleFilename);
-  printTree(
-    moduleComponentTree,
-    (node) => node.name,
-    (node) => node.children
-  );
+  return getModuleTree(moduleFilename);
 }
