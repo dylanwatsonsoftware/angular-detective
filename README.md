@@ -21,9 +21,11 @@ This is a inspired by the packages by [mrjoelkemp](https://github.com/mrjoelkemp
 ```js
 var detective = require('detective-angular-component');
 
-var content = fs.readFileSync('app.module.ts', 'utf8');
+const modules = await detective.glob(rootDir + "/**/*.module.ts", {});
 
-var dependencies = detective(content);
+const moduleDependencies = modules
+    .map((module) => detective.getFlatModuleDeps(module))
+    .flat();
 ```
 
 ### License
