@@ -1,7 +1,7 @@
 ### detective-angular-component
 > Find the dependencies of an angular component and output a dot file
 
-Whilst this was intended to work with a similar interface to other detecives, so it can be incorporated into Madge,
+Whilst this was intended to work with a similar interface to other detectives, so it can be incorporated into Madge,
 that no longer seems to be an easy task as the other detectives have no awareness of the filename of a the give file (they are fed the contents of a js file and just look for imports). 
 
 
