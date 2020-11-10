@@ -24,7 +24,7 @@ const defaultConfig = {
   dependencyFilter: false,
 };
 
-export function generateDotGraph(dependencies, includeModules) {
+export function generateDotGraph(dependencies, includeModules, prefix) {
   const components = dependencies.filter((d) => !d.name.includes("module"));
   const modules = dependencies.filter((d) => d.name.includes("module"));
 
@@ -64,7 +64,13 @@ export function generateDotGraph(dependencies, includeModules) {
       .filter((component) => component.children.length)
       .map((component) => {
         return component.children
-          .map((child) => `  "${component.name}" -> "${child}";`)
+          .map(
+            (child) =>
+              `  "${component.name.replace(prefix, "")}" -> "${child.replace(
+                prefix,
+                ""
+              )}";`
+          )
           .join("\n");
       })
       .join("\n")}
@@ -72,7 +78,10 @@ export function generateDotGraph(dependencies, includeModules) {
   return dotFile;
 }
 
-export function saveToDotFile(filename, components, includeModules) {
-  fs.writeFileSync(filename, generateDotGraph(components, includeModules));
+export function saveToDotFile(filename, components, includeModules, prefix) {
+  fs.writeFileSync(
+    filename,
+    generateDotGraph(components, includeModules, prefix)
+  );
   console.log(`✔ Dot file written to ${filename}`);
 }

@@ -7,10 +7,15 @@ import yargs from "yargs";
 const argv = yargs(process.argv.slice(2))
   .usage("Usage: $0 <file> [options]")
   .option("includeModules", {
+    alias: "m",
     description: "Optionally groups components by modules",
+    default: false,
   })
-  .default("includeModules", false)
-  .alias("m", "includeModules")
+  .option("prefix", {
+    alias: "p",
+    description: "The angular app prefix to remove from the component names",
+    default: "",
+  })
   .demandCommand(1).argv;
 
 import * as detective from "./index.js";
@@ -36,7 +41,7 @@ async function main() {
 
     const file = path.basename(filename);
 
-    saveToDotFile(file + ".dot", moduleDependencies, argv.includeModules);
+    saveToDotFile(file + ".dot", moduleDependencies, argv.includeModules, argv.prefix);
 
     console.log("Completed!");
   } catch (e) {
