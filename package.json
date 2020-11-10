@@ -1,11 +1,11 @@
 {
-  "name": "detective-angular-component",
+  "name": "angular-detective",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "bin": {
-    "detective-angular-component": "cli.js"
+    "angular-detective": "cli.js"
   },
   "scripts": {
     "test": "eslint index.js test/test.js && mocha test/test.js",
