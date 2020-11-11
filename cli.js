@@ -4,22 +4,8 @@ import * as path from "path";
 import { saveToDotFile } from "./dot-graph.js";
 import yargs from "yargs";
 
-  console.log(`
-  
-                                                                   
-  ,---.                         ,--.                               
- /  O  \\ ,--,--,  ,---. ,--.,--.|  | ,--,--.,--.--.                
-|  .-.  ||      \\| .-. ||  ||  ||  |' ,-.  ||  .--'                
-|  | |  ||  ||  |' '-' ''  ''  '|  |\\ '-'  ||  |                   
-'--' '--''--''--'.'-  /  '----' '--' '--'--''--'                   
-                 '---'                                             
-,------.           ,--.                 ,--.  ,--.                 
-|  .-.  \\  ,---. ,-'  '-. ,---.  ,---.,-'  '-.'--',--.  ,--.,---.  
-|  |  \\  :| .-. :'-.  .-'| .-. :| .--''-.  .-',--. \\  ''  /| .-. : 
-|  '--'  /\\   --.  |  |  \\   --.\\ '--.  |  |  |  |  \\    / \\   --. 
-'-------'  '----'  '--'   '----' '---'  '--'  '--'   '--'   '----' 
-                                                                   
-`);
+import { readFileSync } from "fs";
+console.log(readFileSync("./logo.txt").toString());
 
 const argv = yargs(process.argv.slice(2))
   .usage("Usage: $0 <file> [options]")
@@ -34,8 +20,6 @@ const argv = yargs(process.argv.slice(2))
   })
   .demandCommand(1).argv;
 
- 
-
 import * as detective from "./index.js";
 
 const filename = argv._[0];
@@ -43,7 +27,7 @@ const filename = argv._[0];
 const rootDir = path.dirname(filename);
 
 async function main() {
-  console.log("Finding dependencies...");
+  console.log("Finding angular dependencies...");
   try {
     // Find all angular components below directory (component.html)
     // Find associated ts component file (by convention)
