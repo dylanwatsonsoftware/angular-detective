@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
+import { fileURLToPath } from "url";
 import * as path from "path";
 import { saveToDotFile } from "./dot-graph.js";
 import yargs from "yargs";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 import { readFileSync } from "fs";
 console.log(readFileSync(path.resolve(__dirname, "./logo.txt")).toString());
