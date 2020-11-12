@@ -5,7 +5,7 @@ import { saveToDotFile } from "./dot-graph.js";
 import yargs from "yargs";
 
 import { readFileSync } from "fs";
-console.log(readFileSync("./logo.txt").toString());
+console.log(readFileSync(path.resolve(__dirname, "./logo.txt")).toString());
 
 const argv = yargs(process.argv.slice(2))
   .usage("Usage: $0 <file> [options]")
